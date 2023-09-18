@@ -27,6 +27,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
       'name' => 'csv_api_importer',
       'id' => 'csv_api_importer',
       'title' => 'Api Import',
+      'entity' => 'Unknown',
     ]];
   }
 
@@ -36,12 +37,13 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
   public function setFieldMetadata(): void {
     $this->importableFieldsMetadata = array_merge(
       ['' => ['title' => ts('- do not import -')]],
-      civicrm_api3($this->_entity, 'getfields', ['action' => 'create'])['values']
+      civicrm_api3($this->getEntity(), 'getfields', ['action' => 'create'])['values']
     );
     foreach ($this->importableFieldsMetadata as $field => $values) {
       if (empty($values['entity'])) {
-        $this->importableFieldsMetadata[$field]['entity'] = $this->_entity;
+        $this->importableFieldsMetadata[$field]['entity'] = $this->getEntity();
       }
+      
       if (empty($values['title']) && !empty($values['label'])) {
         $this->importableFieldsMetadata[$field]['title'] = $values['label'];
       }
@@ -389,6 +391,16 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
    */
   public function setEntity(string $entity): void {
     $this->_entity = $entity;
+  }
+
+
+  /**
+  * Get the entity being imported.
+  *
+  * @return string
+  */
+  public function getEntity(): string {
+    return $this->getSubmittedValue('entity');
   }
 
   /**
