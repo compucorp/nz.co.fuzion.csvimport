@@ -43,7 +43,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
       if (empty($values['entity'])) {
         $this->importableFieldsMetadata[$field]['entity'] = $this->getEntity();
       }
-
+      
       if (empty($values['title']) && !empty($values['label'])) {
         $this->importableFieldsMetadata[$field]['title'] = $values['label'];
       }
