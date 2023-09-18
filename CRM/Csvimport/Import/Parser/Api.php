@@ -330,7 +330,7 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
           }
         }
 
-        if (count($uniqueField) === $fieldCount) {
+        if (!empty($uniqueField) && count($uniqueField) === $fieldCount) {
           $tmp['sequential'] = 1;
           $tmp['return'] = ['id'];
           $existingEntity = civicrm_api3($this->getSubmittedValue('entity'), 'get', $tmp);
@@ -349,6 +349,37 @@ class CRM_Csvimport_Import_Parser_Api extends CRM_Import_Parser {
       return;
     }
     $this->setImportStatus($rowNumber, 'IMPORTED', '', $result['id']);
+  }
+
+  /**
+  * Overridden to allow adding special case to deal with
+  * the Address `country_id` field.
+  *
+  * @param array $values
+   *
+  * @return array
+  */
+  public function getMappedRow(array $values): array {
+    $params = [];
+
+    foreach ($this->getFieldMappings() as $i => $mappedField) {
+      if ($mappedField['name'] === 'do_not_import') {
+        continue;
+      }
+
+      if ($mappedField['name']) {
+        if ($this->_entity == 'Address' && $mappedField['name'] == 'country_id') {
+          //  hack to get the set the correct $params key for the `country_id` field
+          // instead of the incorrect one given by `$this->getFieldMetadata()`.
+          $params['country_id'] = $this->getTransformedFieldValue($mappedField['name'], $values[$i]);
+        }
+        else {
+          $params[$this->getFieldMetadata($mappedField['name'])['name']] = $this->getTransformedFieldValue($mappedField['name'], $values[$i]);
+        }
+      }
+    }
+
+    return $params;
   }
 
   /**
